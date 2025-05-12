@@ -1,34 +1,86 @@
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useCharacters } from "./hooks/useCharacters";
+import CharacterCard from "./components/CharacterCard";
+import CharacterDetails from "./components/CharacterDetails";
+import SearchBar from "./components/SearchBar";
+import Pagination from "./components/Pagination";
 import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0);
+const queryClient = new QueryClient();
+
+function StarWarsApp() {
+  const [selectedCharacterId, setSelectedCharacterId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const {
+    characters,
+    isLoading,
+    error,
+    currentPage,
+    setCurrentPage,
+    totalPages,
+  } = useCharacters(searchQuery);
+
+  console.log("Characters:", characters);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="min-h-screen min-w-screen bg-gray-100 dark:bg-gray-900 py-8 px-4">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-4xl font-bold text-center mb-8 text-gray-900 dark:text-gray-100">
+          Star Wars Characters
+        </h1>
+
+        <div className="flex justify-center mb-8">
+          <SearchBar value={searchQuery} onChange={setSearchQuery} />
+        </div>
+
+        {isLoading ? (
+          <div className="text-center text-gray-700 dark:text-gray-300">
+            Loading...
+          </div>
+        ) : error ? (
+          <div className="text-center text-red-500">
+            Error loading characters
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+              {characters.map((character) => (
+                <CharacterCard
+                  key={character.uid}
+                  character={character}
+                  onClick={setSelectedCharacterId}
+                />
+              ))}
+            </div>
+
+            {!searchQuery && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            )}
+          </>
+        )}
+
+        {selectedCharacterId && (
+          <CharacterDetails
+            characterId={selectedCharacterId}
+            onClose={() => setSelectedCharacterId(null)}
+          />
+        )}
       </div>
-      <h1 className="text-amber-300">Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <StarWarsApp />
+    </QueryClientProvider>
   );
 }
 
