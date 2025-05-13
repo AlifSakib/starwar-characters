@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useCharacters } from "./hooks/useCharacters";
+import SkeletonCard from "./components/SkeletonCard";
 import CharacterCard from "./components/CharacterCard";
 import CharacterDetails from "./components/CharacterDetails";
 import SearchBar from "./components/SearchBar";
@@ -35,9 +36,24 @@ function StarWarsApp() {
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
         </div>
 
+        <div className="flex justify-start mb-4">
+          {searchQuery && (
+            <div className="text-center mb-4">
+              Search results for:{" "}
+              <span className="font-semibold text-gray-900 dark:text-red-500">
+                {searchQuery}{" "}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Loading and Error Handling */}
+
         {isLoading ? (
-          <div className="text-center text-gray-700 dark:text-gray-300">
-            Loading...
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+            {[...Array(10)].map((_, index) => (
+              <SkeletonCard key={index} />
+            ))}
           </div>
         ) : error ? (
           <div className="text-center text-red-500">
